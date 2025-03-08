@@ -4,6 +4,11 @@ Template to get start with vibe coding with Claude in a Dev Container.
 ## Setup
 
 1. Install VS Code and Docker for multiple isolated environments for vibe coding.
+2. Create a new Repository based on this repository.
+3. Run `Dev Container - Reopen in Container` from the VSCode command palette.
+4. Start Claude Code; Run `claude` to launch REPL.
+5. Complete authentication. Follow the one-time OAuth process with your Console account. You’ll need active billing at [console.anthropic](https://console.anthropic.com/).
+6. Start vibing 🎉
 
 | Platform | VSCode Installation | Docker Installation |
 |----------|----------------------|---------------------|
@@ -11,11 +16,6 @@ Template to get start with vibe coding with Claude in a Dev Container.
 | Mac      | [VSCode](https://code.visualstudio.com/docs/setup/mac)     | [Docker](https://docs.docker.com/desktop/setup/install/mac-install/)     |
 | Linux    | [VSCode](https://code.visualstudio.com/docs/setup/linux)   | [Docker](https://docs.docker.com/desktop/setup/install/linux/ubuntu/)    |
 
-2. Create a new Repository based on this repository.
-3. Run `Dev Container - Reopen in Container` from the VSCode command palette.
-4. Start Claude Code; Run `claude` to launch REPL.
-5. Complete authentication. Follow the one-time OAuth process with your Console account. You’ll need active billing at [console.anthropic](https://console.anthropic.com/).
-6. Start vibing 🎉
 
 ## CLI Commands
 

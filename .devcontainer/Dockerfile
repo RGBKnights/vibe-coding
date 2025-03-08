@@ -19,7 +19,9 @@ USER root
 
 # Overwrite the built-in notice with your own custom message
 RUN echo "Welcome Vibe Coding with Claude! To get started type 'claude'" \
-    > /usr/local/etc/vscode-dev-containers/first-run-notice.txt
+  > /usr/local/etc/vscode-dev-containers/first-run-notice.txt
+
+RUN echo "" > /usr/local/etc/vscode-dev-containers/conda-notice.txt
 
 # (Optional) Install additional packages not already in the universal image.
 RUN apt-get update && apt-get install -y \
