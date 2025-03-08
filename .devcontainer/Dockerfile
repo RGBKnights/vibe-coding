@@ -1,74 +1,41 @@
-FROM node:20
+#------------------------------------------------------------------------------
+# Dockerfile for a Dev Container based on universal:2.9.0-linux,
+# which has .NET 8.0.201, Node.js, Python, Ruby, Go, etc.
+# The default non-root user in this image is "codespace".
+#------------------------------------------------------------------------------
 
+# Use the updated universal dev container image (Ubuntu 20.04 base).
+FROM mcr.microsoft.com/devcontainers/universal:2.9.0-linux
+
+# Set a couple optional environment variables
 ARG TZ
 ENV TZ="$TZ"
-
-# Install basic development tools and iptables/ipset
-RUN apt update && apt install -y less \
-  git \
-  procps \
-  sudo \
-  fzf \
-  zsh \
-  man-db \
-  unzip \
-  gnupg2 \
-  gh \
-  iptables \
-  ipset \
-  iproute2 \
-  dnsutils \
-  aggregate \
-  jq  \
-  python3 \
-  python3-pip 
-
-RUN ln -s /usr/bin/python3 /usr/local/bin/python
-
-# Install .NET SDK 8
-RUN wget https://packages.microsoft.com/config/debian/12/packages-microsoft-prod.deb -O packages-microsoft-prod.deb && \
-  dpkg -i packages-microsoft-prod.deb && \
-  rm packages-microsoft-prod.deb && \
-  apt-get update && \
-  apt-get install -y dotnet-sdk-8.0
-
-# Ensure default node user has access to /usr/local/share
-RUN mkdir -p /usr/local/share/npm-global && \
-  chown -R node:node /usr/local/share
-
-ARG USERNAME=node
-
-# Persist bash history.
-RUN SNIPPET="export PROMPT_COMMAND='history -a' && export HISTFILE=/commandhistory/.bash_history" \
-  && mkdir /commandhistory \
-  && touch /commandhistory/.bash_history \
-  && chown -R $USERNAME /commandhistory
-
-# Set `DEVCONTAINER` environment variable to help with orientation
 ENV DEVCONTAINER=true
 
-# Create workspace and config directories and set permissions
-RUN mkdir -p /workspace /home/node/.claude && \
-  chown -R node:node /workspace /home/node/.claude
+# ------------------------------------------------------------------------------
+# 1. Switch to root to install additional packages/tools
+# ------------------------------------------------------------------------------
+USER root
 
-WORKDIR /workspace
+# (Optional) Install additional packages not already in the universal image.
+RUN apt-get update && apt-get install -y \
+    iptables \
+    ipset \
+    iproute2 \
+    dnsutils \
+    aggregate \
+    fzf \
+    man-db \
+    jq \
+    unzip \
+    zsh \
+    procps \
+    less \
+    sudo \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-RUN ARCH=$(dpkg --print-architecture) && \
-  wget "https://github.com/dandavison/delta/releases/download/0.18.2/git-delta_0.18.2_${ARCH}.deb" && \
-  sudo dpkg -i "git-delta_0.18.2_${ARCH}.deb" && \
-  rm "git-delta_0.18.2_${ARCH}.deb"
-
-# Set up non-root user
-USER node
-
-# Install global packages
-ENV NPM_CONFIG_PREFIX=/usr/local/share/npm-global
-ENV PATH=$PATH:/usr/local/share/npm-global/bin
-
-# Set the default shell to bash rather than sh
-ENV SHELL /bin/zsh
-
-# Default powerline10k theme
+# (Optional) If you want to install a custom Zsh prompt (the universal image
+# already includes oh-my-zsh, but this is an example of the 'zsh-in-docker' script)
 RUN sh -c "$(wget -O- https://github.com/deluan/zsh-in-docker/releases/download/v1.2.0/zsh-in-docker.sh)" -- \
   -p git \
   -p fzf \
@@ -77,13 +44,34 @@ RUN sh -c "$(wget -O- https://github.com/deluan/zsh-in-docker/releases/download/
   -a "export PROMPT_COMMAND='history -a' && export HISTFILE=/commandhistory/.bash_history" \
   -x
 
-# Install Claude
+# Create a directory to persist shell history, then fix ownership to 'codespace'
+RUN mkdir -p /commandhistory \
+    && touch /commandhistory/.bash_history \
+    && chown -R codespace:codespace /commandhistory
+
+# Create a workspace folder (if not already) and fix ownership
+RUN mkdir -p /workspace \
+    && chown -R codespace:codespace /workspace
+WORKDIR /workspace
+
+# (Optional) Install git-delta for fancy diffs
+RUN ARCH=$(dpkg --print-architecture) \
+  && wget -q "https://github.com/dandavison/delta/releases/download/0.18.2/git-delta_0.18.2_${ARCH}.deb" \
+  && dpkg -i "git-delta_0.18.2_${ARCH}.deb" \
+  && rm "git-delta_0.18.2_${ARCH}.deb"
+
+# (Optional) Install a global npm package like Claude code
 RUN npm install -g @anthropic-ai/claude-code
 
-# Copy and set up firewall script
+# Copy your firewall script into the container
 COPY init-firewall.sh /usr/local/bin/
-USER root
-RUN chmod +x /usr/local/bin/init-firewall.sh && \
-  echo "node ALL=(root) NOPASSWD: /usr/local/bin/init-firewall.sh" > /etc/sudoers.d/node-firewall && \
-  chmod 0440 /etc/sudoers.d/node-firewall
-USER node
+RUN chmod +x /usr/local/bin/init-firewall.sh
+
+# Allow user "codespace" to run the firewall script without a password
+RUN echo "codespace ALL=(root) NOPASSWD: /usr/local/bin/init-firewall.sh" > /etc/sudoers.d/codespace-firewall \
+  && chmod 0440 /etc/sudoers.d/codespace-firewall
+
+# ------------------------------------------------------------------------------
+# 2. Switch back to the default non-root user "codespace"
+# ------------------------------------------------------------------------------
+USER codespace

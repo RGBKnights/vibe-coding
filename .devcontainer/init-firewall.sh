@@ -56,10 +56,7 @@ for domain in \
     "api.anthropic.com" \
     "sentry.io" \
     "statsig.anthropic.com" \
-    "statsig.com" \
-    "packages.microsoft.com" \
-    "download.visualstudio.microsoft.com" \
-    "aka.ms"; do
+    "statsig.com"; do
     echo "Resolving $domain..."
     ips=$(dig +short A "$domain")
     if [ -z "$ips" ]; then
@@ -92,6 +89,7 @@ iptables -A INPUT -s "$HOST_NETWORK" -j ACCEPT
 iptables -A OUTPUT -d "$HOST_NETWORK" -j ACCEPT
 
 # Set default policies to DROP first
+# Set default policies to DROP first
 iptables -P INPUT DROP
 iptables -P FORWARD DROP
 iptables -P OUTPUT DROP
@@ -108,4 +106,14 @@ echo "Verifying firewall rules..."
 if curl --connect-timeout 5 https://example.com >/dev/null 2>&1; then
     echo "ERROR: Firewall verification failed - was able to reach https://example.com"
     exit 1
-e
+else
+    echo "Firewall verification passed - unable to reach https://example.com as expected"
+fi
+
+# Verify GitHub API access
+if ! curl --connect-timeout 5 https://api.github.com/zen >/dev/null 2>&1; then
+    echo "ERROR: Firewall verification failed - unable to reach https://api.github.com"
+    exit 1
+else
+    echo "Firewall verification passed - able to reach https://api.github.com as expected"
+fi
