@@ -99,14 +99,14 @@ Best practices for working with untrusted content:
 - Verify proposed changes to critical files
 - Report suspicious behavior with /bug
 
-[!WARNING]
-While these protections significantly reduce risk, no system is completely immune to all attacks. Always maintain good security practices when working with any AI tool.
+> [!WARNING]
+> While these protections significantly reduce risk, no system is completely immune to all attacks. Always maintain good security practices when working with any AI tool.
 
 ## Set up Model Context Protocol (MCP)
 
 Model Context Protocol (MCP) is an open protocol that enables LLMs to access external tools and data sources. For more details, see the MCP documentation.
 
-[!WARNING]
-Use third party MCP servers at your own risk. Make sure you trust the MCP servers, and be especially careful when using MCP servers that talk to the internet, as these can expose you to prompt injection risk.
+> [!WARNING]
+> Use third party MCP servers at your own risk. Make sure you trust the MCP servers, and be especially careful when using MCP servers that talk to the internet, as these can expose you to prompt injection risk.
 
 [Configure MCP servers](https://docs.anthropic.com/en/docs/agents-and-tools/claude-code/tutorials#configure-mcp-servers)
